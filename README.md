@@ -12,7 +12,7 @@ image wearing a different name. What makes yours *yours* is the business rules y
 in `service/ApplicationService.java`.
 
 **This is a skeleton.** It accepts an application from the orchestrator, answers `202`
-immediately, and then — off the request thread — does the three smallest things that prove the
+immediately, and then — off the request thread — does the three smallest things that prove the 
 whole contract works:
 
 1. prints `Hello world from processApplication`,
