@@ -1,21 +1,394 @@
-/* App-specific rules only. Everything visual — colour, type, spacing, radii — comes
- * from the design system's custom properties; this file adds no new values, only
- * the layouts the system has no component for.
- *
- * If something here grows into a pattern three screens need, it belongs in the
- * design system (DESIGN.md § "When the system does not have what you need") — which
- * is exactly how SideNav and SideBrand got there.
- *
- * It used to hold rules for a scenario picker and an expandable row detail. Both
- * components are gone (the picker moved to the sidecar, the detail went with the
- * placeholder table's three columns), so their rules went with them: CSS for a
- * component that no longer exists is the hardest kind of dead code to notice. */
+/* App-specific layout only. Colour, typography, spacing, radii and controls are
+ * inherited from the vendored design system. Do not edit design-system/. */
 
-/* Health and refresh, under the side menu. Not menu items — a row in a menu that is
- * not a screen is a trap — and not a top bar either, because there is no longer one. */
-.app-side-status {
+.csv-side-context {
   display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-card);
+  background: var(--ds-color-surface-raised);
+}
+
+.csv-side-group {
+  margin-top: var(--ds-space-3);
+  padding: 0 var(--ds-space-2);
+  color: var(--ds-color-text-muted);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: var(--ds-tracking-label);
+  text-transform: uppercase;
+}
+
+.csv-side-actions {
+  display: grid;
+  gap: var(--ds-space-3);
+  margin-top: var(--ds-space-3);
+  padding: 0 var(--ds-space-2);
+}
+
+.csv-side-context p {
+  margin: 0;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-body);
+}
+
+.csv-side-context code {
+  color: var(--ds-color-text);
+  font-family: var(--ds-font-mono);
+}
+
+.csv-upload,
+.csv-filters {
+  margin-bottom: var(--ds-space-7);
+}
+
+.csv-upload__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.csv-upload__actions {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--ds-space-3);
-  padding: 0 var(--ds-space-2);
+}
+
+.csv-upload__actions .ds-caption {
+  flex-basis: 100%;
+}
+
+.csv-upload__files,
+.csv-upload__result-list,
+.csv-donut-legend {
+  margin: var(--ds-space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.csv-upload__files {
+  display: grid;
+  gap: var(--ds-space-2);
+}
+
+.csv-upload__files li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3);
+  border: var(--ds-border-width) solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-control);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+}
+
+.csv-upload__result-summary {
+  margin: 0;
+}
+
+.csv-upload__result-list {
+  display: grid;
+  gap: var(--ds-space-2);
+  color: inherit;
+  font-size: var(--ds-text-sm);
+}
+
+.csv-metrics {
+  margin-bottom: var(--ds-space-7);
+}
+
+.csv-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-6);
+  margin-bottom: var(--ds-space-7);
+}
+
+.csv-overview-chart {
+  max-width: 42rem;
+}
+
+.csv-donut-layout {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) minmax(10rem, 1fr);
+  align-items: center;
+  gap: var(--ds-space-6);
+  min-height: 13rem;
+}
+
+.csv-donut {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  width: min(100%, 12rem);
+  margin: 0 auto;
+  border-radius: 50%;
+}
+
+.csv-donut::before {
+  content: '';
+  position: absolute;
+  inset: 24%;
+  border-radius: inherit;
+  background: var(--ds-color-surface-raised);
+}
+
+.csv-donut__center {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+}
+
+.csv-donut__center strong {
+  color: var(--ds-color-text);
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-3xl);
+  font-weight: var(--ds-weight-semibold);
+  line-height: 1;
+}
+
+.csv-donut-legend {
+  display: grid;
+  gap: var(--ds-space-3);
+}
+
+.csv-donut-legend li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--ds-space-3);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.csv-chart-empty {
+  display: grid;
+  min-height: 13rem;
+  place-items: center;
+  color: var(--ds-color-text-muted);
+  font-size: var(--ds-text-sm);
+  text-align: center;
+}
+
+.csv-quarterly {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(4rem, 1fr));
+  align-items: end;
+  min-height: 19rem;
+  gap: var(--ds-space-5);
+  padding: var(--ds-space-3) var(--ds-space-3) var(--ds-space-8);
+  border-bottom: var(--ds-border-width) solid var(--ds-color-border);
+}
+
+.csv-quarterly__column {
+  display: grid;
+  grid-template-rows: auto 13rem auto auto;
+  justify-items: center;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+
+.csv-quarterly__value {
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.csv-quarterly__plot {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-start;
+  width: min(100%, 5rem);
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--ds-radius-control) var(--ds-radius-control) 0 0;
+  background: var(--ds-series-track);
+}
+
+.csv-quarterly__segment {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  transition: height var(--ds-transition);
+}
+
+.csv-quarterly__segment--completed {
+  background: var(--ds-tone-positive-accent);
+}
+
+.csv-quarterly__segment--rejected {
+  background: var(--ds-tone-negative-accent);
+}
+
+.csv-quarterly__segment--in-progress {
+  background: var(--ds-tone-info-accent);
+}
+
+.csv-quarterly__label {
+  color: var(--ds-color-text);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.csv-quarterly__detail {
+  color: var(--ds-color-text-muted);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.csv-quarterly__legend {
+  position: absolute;
+  right: var(--ds-space-3);
+  bottom: var(--ds-space-3);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--ds-space-4);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+}
+
+.csv-quarterly__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.csv-dot {
+  display: inline-block;
+  width: var(--ds-space-2);
+  height: var(--ds-space-2);
+  border-radius: 50%;
+}
+
+.csv-dot--completed {
+  background: var(--ds-tone-positive-accent);
+}
+
+.csv-dot--rejected {
+  background: var(--ds-tone-negative-accent);
+}
+
+.csv-dot--in-progress {
+  background: var(--ds-tone-info-accent);
+}
+
+.csv-dot--inProgress {
+  background: var(--ds-tone-info-accent);
+}
+
+.csv-card-outcomes {
+  display: grid;
+  gap: var(--ds-space-5);
+  min-height: 13rem;
+}
+
+.csv-card-outcomes__row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) minmax(8rem, 2fr) auto;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.csv-card-outcomes__track {
+  display: flex;
+  height: var(--ds-space-4);
+  overflow: hidden;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-series-track);
+}
+
+.csv-card-outcomes__segment { height: 100%; }
+.csv-card-outcomes__segment--completed { background: var(--ds-tone-positive-accent); }
+.csv-card-outcomes__segment--rejected { background: var(--ds-tone-negative-accent); }
+.csv-card-outcomes__segment--inProgress { background: var(--ds-tone-info-accent); }
+
+.csv-card-outcomes__total,
+.csv-card-outcomes__counts {
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.csv-card-outcomes__counts,
+.csv-card-outcomes__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+}
+
+.csv-card-outcomes__counts {
+  grid-column: 2 / -1;
+  margin-top: calc(var(--ds-space-3) * -1);
+}
+
+.csv-card-outcomes__counts span,
+.csv-card-outcomes__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.csv-card-outcomes__legend {
+  padding-top: var(--ds-space-4);
+  border-top: var(--ds-border-width) solid var(--ds-color-border-subtle);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+}
+
+@media (max-width: 900px) {
+  .csv-chart-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .csv-card-outcomes__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .csv-card-outcomes__track,
+  .csv-card-outcomes__counts {
+    grid-column: 1 / -1;
+  }
+
+  .csv-card-outcomes__counts { margin-top: 0; }
+}
+
+@media (max-width: 560px) {
+  .csv-donut-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .csv-donut-legend {
+    width: min(100%, 20rem);
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .csv-quarterly {
+    gap: var(--ds-space-3);
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .csv-quarterly__column {
+    grid-template-rows: auto 10rem auto auto;
+  }
+
+  .csv-quarterly__legend {
+    right: 0;
+  }
 }
