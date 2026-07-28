@@ -62,7 +62,6 @@ public class ApplicationService {
         this.executor = executor;
         this.demoShowcase = demoShowcase;
         this.orchestrator = orchestrator;
-        
     }
 
     /**
