@@ -5,9 +5,15 @@ databaseChangeLog:
       preConditions:
         onFail: MARK_RAN
         not:
-          uniqueConstraintExists:
-            tableName: processed
-            constraintName: uq_processed_filename
+          or:
+            # H2 reports this as a constraint, whereas MySQL reports it as a
+            # named unique index. Either representation means 003 already added it.
+            - uniqueConstraintExists:
+                tableName: processed
+                constraintName: uq_processed_filename
+            - indexExists:
+                tableName: processed
+                indexName: uq_processed_filename
       changes:
         - addUniqueConstraint:
             tableName: processed
