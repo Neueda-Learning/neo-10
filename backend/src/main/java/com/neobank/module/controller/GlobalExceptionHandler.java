@@ -1,5 +1,6 @@
 package com.neobank.module.controller;
 
+import com.neobank.module.service.CsvValidationException;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -54,6 +55,18 @@ public class GlobalExceptionHandler {
         int newline = message == null ? -1 : message.indexOf('\n');
         return error(HttpStatus.BAD_REQUEST,
                 "malformed request body: " + (newline > 0 ? message.substring(0, newline) : message));
+    }
+
+    /** A CSV was readable but one of its headers or values violates the import contract. */
+    @ExceptionHandler(CsvValidationException.class)
+    public ResponseEntity<Map<String, Object>> handleCsvValidation(CsvValidationException ex) {
+        return error(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    /** Invalid filter values and empty upload requests are caller errors, not server faults. */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        return error(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     private ResponseEntity<Map<String, Object>> error(HttpStatus status, String message) {
