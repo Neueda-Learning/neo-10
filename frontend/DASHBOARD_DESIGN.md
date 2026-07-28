@@ -1,26 +1,35 @@
 # Card portfolio dashboard front-end design
 
-One page provides the full workflow:
+The application uses a left sidebar to separate analysis from data operations:
 
-1. Select one or more local CSV files.
-2. Upload and process them into `raw_data`.
-3. Choose start date, end date and card type.
-4. Read filtered data and analytics.
-5. Show the raw records and the corresponding charts together.
+```text
+Analytics: Overview · Quarterly trend · Card analysis
+Data: Raw data · Processed files
+```
 
-## Page regions
+The sidebar upload action opens Processed files, where the local multi-file CSV
+selector and the processing history are displayed together.
 
-- **Import CSV files**: local multi-file selector, upload button, file list and import result.
-- **Reporting filters**: start date, end date, card type. There is deliberately no status filter.
-- **Metrics**: matching records, completed count, rejected count and in-progress count.
-- **Status breakdown**: donut chart comparing Completed, Rejected and In progress.
-- **Card type breakdown**: donut chart comparing Premium Card and Platinum Card.
-- **Quarterly outcome trend**: Q1 to Q4 stacked columns; completed is green, rejected is red and in progress is blue.
-- **Imported raw data**: table of generated ID, status, card type and applied date.
+## Screens and charts
 
-All data regions below the filters use exactly the same `from`, `to` and
-`cardType` query values. The status chart therefore remains a useful comparison
-instead of becoming a single-slice chart through a status filter.
+- **Overview**: four outcome metrics and the three-status donut chart.
+- **Quarterly trend**: Q1–Q4 stacked columns for Completed, Rejected and In progress.
+- **Card analysis**: card-type donut plus a 100% stacked outcome mix for Premium and Platinum Card.
+- **Raw data**: the filtered `raw_data` records table.
+- **Processed files**: CSV import action and `processed_files` history table.
+
+## Global reporting filters
+
+The following workflow applies on Overview, Quarterly trend, Card analysis and
+Raw data:
+
+1. Choose start date, end date and card type.
+2. Read filtered data and analytics.
+3. Use the appropriate sidebar screen to view the chart or raw records.
+
+There is deliberately no status filter. All analytics screens use exactly the
+same `from`, `to` and `cardType` query values, so the three-status chart remains
+a meaningful comparison.
 
 ## Demo and API modes
 

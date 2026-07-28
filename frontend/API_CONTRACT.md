@@ -82,11 +82,28 @@ type are the only front-end filters.
     { "cardType": "PREMIUM_CARD", "count": 10 },
     { "cardType": "PLATINUM_CARD", "count": 10 }
   ],
+  "cardTypeStatusBreakdown": [
+    { "cardType": "PREMIUM_CARD", "completed": 7, "rejected": 2, "inProgress": 1, "total": 10 },
+    { "cardType": "PLATINUM_CARD", "completed": 5, "rejected": 3, "inProgress": 2, "total": 10 }
+  ],
   "quarterlyBreakdown": [
     { "quarter": "Q1", "completed": 4, "rejected": 2, "inProgress": 1, "total": 7 },
     { "quarter": "Q2", "completed": 3, "rejected": 1, "inProgress": 1, "total": 5 },
     { "quarter": "Q3", "completed": 3, "rejected": 1, "inProgress": 1, "total": 5 },
     { "quarter": "Q4", "completed": 2, "rejected": 1, "inProgress": 0, "total": 3 }
+  ]
+}
+```
+
+## Read processed files
+
+`GET /api/v1/processed-files`
+
+```json
+{
+  "total": 2,
+  "items": [
+    { "id": 1, "filename": "customer_data_2026_01.csv", "status": "PROCESSED", "rowCount": 20, "processedAt": "2026-01-31T10:15:00Z" }
   ]
 }
 ```

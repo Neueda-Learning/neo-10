@@ -31,6 +31,10 @@ const liveApi = {
     const params = new URLSearchParams({ from, to, cardType });
     return request('/api/v1/dashboard/analytics?' + params.toString());
   },
+
+  getProcessedFiles() {
+    return request('/api/v1/processed-files');
+  },
 };
 
 export const api = isMockMode ? mockRawDataApi : liveApi;

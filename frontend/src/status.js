@@ -11,6 +11,12 @@ export const cardTypeTone = toneMapper({
   PLATINUM_CARD: TONES.WARNING,
 });
 
+export const processedTone = toneMapper({
+  PROCESSED: TONES.POSITIVE,
+  FAILED: TONES.NEGATIVE,
+  ALREADY_IMPORTED: TONES.WARNING,
+});
+
 export function formatCardType(value) {
   return value === 'PREMIUM_CARD' ? 'Premium Card' : value === 'PLATINUM_CARD' ? 'Platinum Card' : value;
 }

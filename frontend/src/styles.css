@@ -11,6 +11,23 @@
   background: var(--ds-color-surface-raised);
 }
 
+.csv-side-group {
+  margin-top: var(--ds-space-3);
+  padding: 0 var(--ds-space-2);
+  color: var(--ds-color-text-muted);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: var(--ds-tracking-label);
+  text-transform: uppercase;
+}
+
+.csv-side-actions {
+  display: grid;
+  gap: var(--ds-space-3);
+  margin-top: var(--ds-space-3);
+  padding: 0 var(--ds-space-2);
+}
+
 .csv-side-context p {
   margin: 0;
   color: var(--ds-color-text-secondary);
@@ -94,6 +111,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--ds-space-6);
   margin-bottom: var(--ds-space-7);
+}
+
+.csv-overview-chart {
+  max-width: 42rem;
 }
 
 .csv-donut-layout {
@@ -266,10 +287,84 @@
   background: var(--ds-tone-info-accent);
 }
 
+.csv-dot--inProgress {
+  background: var(--ds-tone-info-accent);
+}
+
+.csv-card-outcomes {
+  display: grid;
+  gap: var(--ds-space-5);
+  min-height: 13rem;
+}
+
+.csv-card-outcomes__row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) minmax(8rem, 2fr) auto;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.csv-card-outcomes__track {
+  display: flex;
+  height: var(--ds-space-4);
+  overflow: hidden;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-series-track);
+}
+
+.csv-card-outcomes__segment { height: 100%; }
+.csv-card-outcomes__segment--completed { background: var(--ds-tone-positive-accent); }
+.csv-card-outcomes__segment--rejected { background: var(--ds-tone-negative-accent); }
+.csv-card-outcomes__segment--inProgress { background: var(--ds-tone-info-accent); }
+
+.csv-card-outcomes__total,
+.csv-card-outcomes__counts {
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.csv-card-outcomes__counts,
+.csv-card-outcomes__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+}
+
+.csv-card-outcomes__counts {
+  grid-column: 2 / -1;
+  margin-top: calc(var(--ds-space-3) * -1);
+}
+
+.csv-card-outcomes__counts span,
+.csv-card-outcomes__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.csv-card-outcomes__legend {
+  padding-top: var(--ds-space-4);
+  border-top: var(--ds-border-width) solid var(--ds-color-border-subtle);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+}
+
 @media (max-width: 900px) {
   .csv-chart-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .csv-card-outcomes__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .csv-card-outcomes__track,
+  .csv-card-outcomes__counts {
+    grid-column: 1 / -1;
+  }
+
+  .csv-card-outcomes__counts { margin-top: 0; }
 }
 
 @media (max-width: 560px) {

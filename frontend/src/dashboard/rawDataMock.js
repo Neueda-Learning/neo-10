@@ -18,6 +18,12 @@ let rows = [
 
 let nextId = rows.length + 1;
 const processedUploads = new Set();
+let processedFiles = [
+  { id: 1, filename: 'customer_data_2026_01.csv', status: 'PROCESSED', rowCount: 2, processedAt: '2026-01-31T10:15:00Z' },
+  { id: 2, filename: 'customer_data_2026_02.csv', status: 'PROCESSED', rowCount: 2, processedAt: '2026-02-28T10:15:00Z' },
+  { id: 3, filename: 'customer_data_2026_03.csv', status: 'PROCESSED', rowCount: 2, processedAt: '2026-03-31T10:15:00Z' },
+];
+let nextProcessedId = processedFiles.length + 1;
 
 function wait(value) {
   return new Promise((resolve) => window.setTimeout(() => resolve(value), 180));
@@ -83,9 +89,11 @@ export const mockRawDataApi = {
         const importedRows = parseCsv(await file.text(), file.name);
         rows = rows.concat(importedRows.map((row) => ({ ...row, id: nextId++ })));
         processedUploads.add(key);
+        processedFiles = [{ id: nextProcessedId++, filename: file.name, status: 'PROCESSED', rowCount: importedRows.length, processedAt: new Date().toISOString() }, ...processedFiles];
         rowsInserted += importedRows.length;
         results.push({ filename: file.name, result: 'PROCESSED', rowsInserted: importedRows.length });
       } catch (error) {
+        processedFiles = [{ id: nextProcessedId++, filename: file.name, status: 'FAILED', rowCount: 0, processedAt: null, errorMessage: error.message }, ...processedFiles];
         results.push({ filename: file.name, result: 'FAILED', rowsInserted: 0, error: error.message });
       }
     }
@@ -116,7 +124,18 @@ export const mockRawDataApi = {
       total: filtered.length,
       statusBreakdown: countBy(filtered, 'status', ['COMPLETED', 'REJECTED', 'IN_PROGRESS']),
       cardTypeBreakdown: countBy(filtered, 'cardType', ['PREMIUM_CARD', 'PLATINUM_CARD']),
+      cardTypeStatusBreakdown: ['PREMIUM_CARD', 'PLATINUM_CARD'].map((cardType) => {
+        const cardRows = filtered.filter((row) => row.cardType === cardType);
+        const completed = cardRows.filter((row) => row.status === 'COMPLETED').length;
+        const rejected = cardRows.filter((row) => row.status === 'REJECTED').length;
+        const inProgress = cardRows.filter((row) => row.status === 'IN_PROGRESS').length;
+        return { cardType, completed, rejected, inProgress, total: completed + rejected + inProgress };
+      }),
       quarterlyBreakdown,
     });
+  },
+
+  async getProcessedFiles() {
+    return wait({ items: processedFiles, total: processedFiles.length });
   },
 };
