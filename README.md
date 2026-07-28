@@ -1,5 +1,81 @@
 # neo-10 — Portfolio & Regulatory Analytics
 
+
+## Completed Features
+
+### Frontend
+
+- Built the Portfolio & Regulatory Analytics dashboard with sidebar navigation:
+  - Overview
+  - Quarterly Trend
+  - Card Analysis
+  - Raw Data
+  - Processed Files
+- Added local multi-file CSV upload with per-file import results.
+- Added reporting filters for:
+  - Start date
+  - End date
+  - Card type: All / Premium Card / Platinum Card
+- Implemented dashboard visualisations:
+  - Status breakdown pie chart: Completed / Rejected / In Progress
+  - Quarterly bar chart: Q1–Q4 status comparison
+  - Card type distribution and card type × status analysis
+- Added Raw Data table with filtering and pagination.
+- Added Processed Files history view.
+- Updated Docker frontend build configuration to use the real backend API instead of Mock mode.
+- Frontend now waits for backend health before starting in Docker Compose.
+
+### Backend
+
+- Added `raw_data` table for imported portfolio application records.
+- Added `processed` table to track processed CSV files.
+- Added a unique constraint on `processed.filename` to prevent duplicate imports.
+- Added Liquibase migrations for the new tables and compatibility handling for existing local databases.
+
+### APIs
+
+Implemented four logical APIs:
+
+1. `POST /api/v1/processFile`
+   - Upload one or more CSV files.
+   - Compatible frontend endpoint: `POST /api/v1/raw-data/upload`.
+
+2. `GET /api/v1/raw-data`
+   - Returns imported raw data.
+   - Supports date range, card type, pagination, and page size.
+
+3. `GET /api/v1/dashboard/analytics`
+   - Returns aggregated data for dashboard charts.
+   - Includes status, quarter, card type, and card type/status breakdowns.
+
+4. `GET /api/v1/processed-files`
+   - Returns CSV processing history.
+
+### CSV Import Logic
+
+- Checks `processed` before importing each file.
+- A file already marked `PROCESSED` returns `ALREADY_IMPORTED` and is not inserted again.
+- Successfully parsed rows are inserted into `raw_data`.
+- Successful files are recorded as `PROCESSED`.
+- Invalid files are recorded as `FAILED` and can be corrected and uploaded again.
+- CSV status mapping supports:
+  - `ACCEPTED` → `IN_PROGRESS`
+  - `DECLINED` → `REJECTED`
+  - `COMPLETED` → `COMPLETED`
+- Card type mapping supports:
+  - `premium` → `PREMIUM_CARD`
+  - `platinum` → `PLATINUM_CARD`
+
+### Sample Data and Verification
+
+- Added 12 monthly CSV sample files for 2026.
+- Each month contains 25 records; total sample data: 300 rows.
+- Verified with:
+  - Unit and application tests
+  - H2 Liquibase migration tests
+  - MySQL Testcontainers integration tests
+  - `CI=true ./mvnw -B verify`
+
 **Module 01 of ten.** One step of the neo-bank customer-onboarding journey, owned by
 **Team 10**. The journey is driven by
 [`neo-00`](https://github.com/Neueda-Learning/neo-00), the orchestrator — which also owns the AWS
