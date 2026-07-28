@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-add-processed-filename-unique
+      author: neo-10
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          uniqueConstraintExists:
+            tableName: processed
+            constraintName: uq_processed_filename
+      changes:
+        - addUniqueConstraint:
+            tableName: processed
+            columnNames: filename
+            constraintName: uq_processed_filename
+      rollback:
+        - dropUniqueConstraint:
+            tableName: processed
+            constraintName: uq_processed_filename

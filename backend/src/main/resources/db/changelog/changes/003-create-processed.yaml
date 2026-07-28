@@ -2,6 +2,9 @@ databaseChangeLog:
   - changeSet:
       id: 003-create-processed
       author: neo-10
+      # This change set was applied locally before its YAML was reformatted. Keep the
+      # recorded checksum valid so existing databases can start without resetting data.
+      validCheckSum: 9:634e84fae85e2d4792d8a31656efa182
       changes:
         - createTable:
             tableName: processed
