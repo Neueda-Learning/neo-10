@@ -1,21 +1,190 @@
-/* App-specific rules only. Everything visual — colour, type, spacing, radii — comes
- * from the design system's custom properties; this file adds no new values, only
- * the layouts the system has no component for.
- *
- * If something here grows into a pattern three screens need, it belongs in the
- * design system (DESIGN.md § "When the system does not have what you need") — which
- * is exactly how SideNav and SideBrand got there.
- *
- * It used to hold rules for a scenario picker and an expandable row detail. Both
- * components are gone (the picker moved to the sidecar, the detail went with the
- * placeholder table's three columns), so their rules went with them: CSS for a
- * component that no longer exists is the hardest kind of dead code to notice. */
+/* App-specific layout only. Colour, typography, spacing, radii and controls are
+ * inherited from the vendored design system. Do not edit design-system/. */
 
-/* Health and refresh, under the side menu. Not menu items — a row in a menu that is
- * not a screen is a trap — and not a top bar either, because there is no longer one. */
 .app-side-status {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--ds-space-3);
   padding: 0 var(--ds-space-2);
+}
+
+.analytics-context {
+  margin-bottom: var(--ds-space-7);
+}
+
+.analytics-context .ds-form-actions {
+  justify-content: flex-end;
+}
+
+.analytics-context__facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 2fr);
+  align-items: end;
+  gap: var(--ds-space-5);
+  margin-top: var(--ds-space-6);
+  padding-top: var(--ds-space-5);
+  border-top: var(--ds-border-width) solid var(--ds-color-border-subtle);
+}
+
+.analytics-analysis-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--ds-space-6);
+}
+
+.analytics-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.analytics-funnel__row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) minmax(0, 2fr) minmax(0, 2fr) auto;
+  align-items: end;
+  gap: var(--ds-space-3);
+  padding-bottom: var(--ds-space-3);
+  border-bottom: var(--ds-border-width) solid var(--ds-color-border-subtle);
+}
+
+.analytics-funnel__row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.analytics-funnel__measure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+
+.analytics-funnel__measure-label,
+.analytics-funnel__drop {
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.analytics-funnel__drop {
+  white-space: nowrap;
+}
+
+.analytics-funnel__track {
+  display: block;
+  height: var(--ds-space-3);
+  overflow: hidden;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-series-track);
+}
+
+.analytics-funnel__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width var(--ds-transition);
+}
+
+.analytics-funnel__fill--reached {
+  background: var(--ds-tone-info-accent);
+}
+
+.analytics-funnel__fill--passed {
+  background: var(--ds-tone-positive-accent);
+}
+
+.analytics-extract-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 1fr);
+  gap: var(--ds-space-6);
+  align-items: start;
+}
+
+.analytics-extract__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+}
+
+.analytics-column-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-2) var(--ds-space-5);
+  margin: var(--ds-space-6) 0 0;
+  padding-left: var(--ds-space-5);
+}
+
+.analytics-column-list li::marker {
+  color: var(--ds-color-text-muted);
+  font-size: var(--ds-text-sm);
+}
+
+.analytics-inline-error {
+  margin: 0;
+  color: var(--ds-tone-negative-text);
+  font-size: var(--ds-text-sm);
+}
+
+.analytics-status-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-6);
+  padding-top: var(--ds-space-5);
+  border-top: var(--ds-border-width) solid var(--ds-color-border-subtle);
+}
+
+.analytics-definition-versions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-5);
+}
+
+.analytics-detail-label {
+  width: 100%;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+}
+
+.analytics-definition-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-5);
+}
+
+.analytics-definition-grid p {
+  margin: 0;
+  color: var(--ds-color-text-secondary);
+  line-height: var(--ds-leading-body);
+}
+
+@media (max-width: 900px) {
+  .analytics-analysis-grid,
+  .analytics-extract-grid,
+  .analytics-context__facts,
+  .analytics-definition-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .analytics-funnel__row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .analytics-funnel__row > .ds-tag {
+    grid-column: 1 / -1;
+  }
+
+  .analytics-funnel__drop {
+    grid-column: 1 / -1;
+  }
+
+  .analytics-column-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
