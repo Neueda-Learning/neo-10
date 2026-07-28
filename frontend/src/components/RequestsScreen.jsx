@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   Alert,
   Badge,
+  Button,
   ChipGroup,
   DataTable,
   EmptyState,
@@ -11,6 +12,7 @@ import {
   SearchInput,
   Toolbar,
 } from '../design-system';
+import { api } from '../api.js';
 import { statusTone, STATUSES, time } from '../status.js';
 
 const FILTERS = ['All', ...STATUSES];
@@ -29,6 +31,20 @@ const FILTERS = ['All', ...STATUSES];
 export default function RequestsScreen({ requests, error, info }) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('All');
+  // Manual trigger for this module's own CSV ingestion (CustomerDataCsvLoader), which otherwise
+  // only runs once at startup. Separate from `requests`/`error` above — those are the orchestrator
+  // contract's read-only list, this is this module's own data-ops action.
+  const [loadState, setLoadState] = useState({ status: 'idle' });
+
+  const handleLoadCustomerData = async () => {
+    setLoadState({ status: 'loading' });
+    try {
+      const summary = await api.loadCustomerData();
+      setLoadState({ status: 'done', summary });
+    } catch (e) {
+      setLoadState({ status: 'error', message: e.message });
+    }
+  };
 
   const counts = useMemo(
     () =>
@@ -77,6 +93,31 @@ export default function RequestsScreen({ requests, error, info }) {
       {error && (
         <Alert tone="negative" title="Could not load applications">
           {error} — the backend may still be starting. The list retries every two seconds.
+        </Alert>
+      )}
+
+      <Toolbar style={{ marginBottom: 'var(--ds-space-4)' }}>
+        <Button
+          variant="secondary"
+          size="sm"
+          busy={loadState.status === 'loading'}
+          busyLabel="Loading customer data…"
+          onClick={handleLoadCustomerData}
+        >
+          Load customer CSV data
+        </Button>
+        {loadState.status === 'done' && (
+          <span>
+            Loaded {loadState.summary.loadedFiles.length} file(s),{' '}
+            {loadState.summary.rowsInserted} row(s); skipped{' '}
+            {loadState.summary.skippedFiles.length} already-processed file(s).
+          </span>
+        )}
+      </Toolbar>
+
+      {loadState.status === 'error' && (
+        <Alert tone="negative" title="Could not load customer data">
+          {loadState.message}
         </Alert>
       )}
 

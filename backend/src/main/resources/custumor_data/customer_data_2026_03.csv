@@ -1,4 +1,4 @@
-id,status,card_type,timestamp
+id,status,card_type,applied_date
 1,ACCEPTED,platinum,2026-03-01 09:00:00
 2,DECLINED,premium,2026-03-02 09:00:00
 3,COMPLETED,platinum,2026-03-03 09:00:00

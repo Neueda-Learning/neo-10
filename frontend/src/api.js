@@ -28,12 +28,18 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-// This UI only ever READS. Applications arrive from the orchestrator — the real one, or the
-// sidecar playing it at http://localhost:9000 — never from a button in here. That is the
+// This UI only ever READS applications. Applications arrive from the orchestrator — the real one,
+// or the sidecar playing it at http://localhost:9000 — never from a button in here. That is the
 // contract: your module is called, it does not call itself.
 export const api = {
   health: () => request('/health'),
   info: () => request('/info'),
   listApplications: () => request('/api/v1/applications'),
   getApplication: (id) => request(`/api/v1/applications/${id}`),
+
+  // Separate from the orchestrator contract above: this module's own CSV ingestion pipeline
+  // (backend/.../service/CustomerDataCsvLoader), which normally runs once at startup. This lets an
+  // operator trigger it again on demand — already-processed files are skipped, so it is safe to
+  // call more than once.
+  loadCustomerData: () => request('/api/v1/customer-data/load', { method: 'POST' }),
 };
