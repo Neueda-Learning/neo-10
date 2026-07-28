@@ -1,104 +1,83 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { AppShell, Button, SideBrand, SideNav, StatusPill } from './design-system';
-import RequestsScreen from './components/RequestsScreen.jsx';
-import { api } from './api.js';
+import { AppShell, SideBrand, StatusPill } from './design-system';
+import { api, isMockMode } from './api.js';
+import CsvUploadPanel from './components/CsvUploadPanel.jsx';
+import DataDashboard from './components/DataDashboard.jsx';
 
-const POLL_MS = 2000;
-const HEALTH_MS = 10000;
+const INITIAL_FILTERS = {
+  from: '2026-01-01',
+  to: '2026-12-31',
+  cardType: 'ALL',
+};
 
-/**
- * The screens in the side menu.
- *
- * ⚠️ One real screen and three placeholders — the placeholders are there so the menu shows you
- * where your own screens go, and they are `disabled` so nobody clicks into nothing. Replace them
- * with what your business topic actually needs; the operator UI is a graded deliverable, and a
- * single read-only list is not one.
- */
-const SCREENS = [
-  { id: 'applications', label: 'Applications' },
-  { id: 'cases', label: 'Cases', hint: 'your own table', disabled: true },
-  { id: 'overrides', label: 'Overrides', hint: 'operator actions', disabled: true },
-  { id: 'settings', label: 'Settings', hint: 'reference data', disabled: true },
-];
-
-/**
- * A sidebar rather than a top bar: this app is expected to grow more screens than a row of tabs
- * holds, and the menu is where a team plans that growth. The identity box above it is the only
- * place the app says who it belongs to — its values come from `/info`, so the same image reads
- * "Team 07" once SERVICE_TEAM says so.
- */
 export default function App() {
-  const [screen, setScreen] = useState('applications');
-  const [requests, setRequests] = useState([]);
+  const [filters, setFilters] = useState(INITIAL_FILTERS);
+  const [data, setData] = useState({ rows: [], total: 0, analytics: null });
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [health, setHealth] = useState(null);
-  const [info, setInfo] = useState(null);
 
-  const reload = useCallback(async () => {
+  const loadDashboard = useCallback(async (nextFilters) => {
+    setLoading(true);
+    setError(null);
     try {
-      setRequests(await api.listApplications());
-      setError(null);
-    } catch (e) {
-      setError(e.message);
+      const [rawData, analytics] = await Promise.all([
+        api.getRawData({ ...nextFilters, page: 0, size: 50 }),
+        api.getAnalytics(nextFilters),
+      ]);
+      setData({ rows: rawData.items, total: rawData.total, analytics });
+    } catch (nextError) {
+      setError(nextError.message || 'Could not load dashboard data.');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    reload();
-    const id = setInterval(reload, POLL_MS);
-    return () => clearInterval(id);
-  }, [reload]);
+    loadDashboard(filters);
+  }, [filters, loadDashboard]);
 
-  const refreshHealth = useCallback(async () => {
-    try {
-      const [h, i] = await Promise.all([api.health(), api.info()]);
-      setHealth(h);
-      setInfo(i);
-    } catch {
-      setHealth(null);
-    }
-  }, []);
+  function applyFilters(nextFilters) {
+    setFilters(nextFilters);
+  }
 
-  useEffect(() => {
-    refreshHealth();
-    const id = setInterval(refreshHealth, HEALTH_MS);
-    return () => clearInterval(id);
-  }, [refreshHealth]);
-
-  const up = !error && health?.status === 'UP';
+  async function handleUpload(files) {
+    const result = await api.uploadFiles(files);
+    await loadDashboard(filters);
+    return result;
+  }
 
   return (
     <AppShell
+      wide
       side={
         <>
           <SideBrand
-            brand={info?.team ?? 'Team'}
-            product={info?.service ?? 'Module'}
-            meta={info ? `${info.serviceId} · ${info.domain}` : undefined}
+            brand="NEO · DATA"
+            product="Card portfolio dashboard"
+            meta="CSV import · raw data reporting"
           />
-          <SideNav items={SCREENS} active={screen} onSelect={setScreen} />
-          {/* Health and refresh lived in the top bar; with the bar gone they belong beside the
-              menu rather than inside it — a menu item that is not a screen is a trap. */}
-          <div className="app-side-status">
-            <StatusPill tone={up ? 'positive' : 'negative'}>{up ? 'Up' : 'Down'}</StatusPill>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                reload();
-                refreshHealth();
-              }}
-            >
-              Refresh
-            </Button>
+          <div className="csv-side-context">
+            <StatusPill tone={isMockMode ? 'warning' : 'positive'}>
+              {isMockMode ? 'Demo data mode' : 'API connected'}
+            </StatusPill>
+            <p>
+              Upload CSV files, then analyse the records stored in <code>raw_data</code>.
+            </p>
           </div>
         </>
       }
-      footer="One of ten modules · applications arrive from the orchestrator, never from this UI"
+      footer={isMockMode ? 'Front-end demo mode · set VITE_DATA_MODE=api when the backend endpoints are ready' : 'Data is served from raw_data'}
     >
-      {screen === 'applications' && (
-        <RequestsScreen requests={requests} error={error} info={info} />
-      )}
+      <CsvUploadPanel onUpload={handleUpload} />
+      <DataDashboard
+        filters={filters}
+        onApplyFilters={applyFilters}
+        rows={data.rows}
+        total={data.total}
+        analytics={data.analytics}
+        loading={loading}
+        error={error}
+      />
     </AppShell>
   );
 }
