@@ -100,7 +100,7 @@ export default function DataDashboard({
 
 function ScreenContent({ screen, analytics, rows, total, completed, rejected, inProgress, rawColumns }) {
   if (screen === 'quarterly') {
-    return <Section title="Quarterly outcome trend" aside="Each bar is a calendar quarter calculated from applied_date. Completed / Rejected / In progress."><Card><QuarterlyChart items={analytics?.quarterlyBreakdown ?? []} /></Card></Section>;
+    return <Section title="Quarterly outcome trend" aside="Each calendar quarter contains three bars: Completed, Rejected and In progress. Quarters are calculated from applied_date."><Card><QuarterlyChart items={analytics?.quarterlyBreakdown ?? []} /></Card></Section>;
   }
 
   if (screen === 'cards') {
