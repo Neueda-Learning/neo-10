@@ -76,6 +76,12 @@ service:
   # means you are claiming nothing is mocked.
   mocked-dependencies: ${MOCKED_DEPENDENCIES:}
 
+portfolio:
+  # Scan is server-side: the browser never sends a local path or uploads a file.
+  # This must remain relative to the backend working directory so the same value
+  # works locally, in Docker and in AWS Dev.
+  data-directory: ${PORTFOLIO_DATA_DIRECTORY:src/main/resources/customer_data}
+
 cors:
   allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*}
 

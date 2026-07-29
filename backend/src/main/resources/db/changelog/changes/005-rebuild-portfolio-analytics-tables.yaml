@@ -1,0 +1,70 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-rebuild-portfolio-analytics-tables
+      author: neo-10
+      changes:
+        # The previous three-column import contract is incompatible with the daily
+        # journey feed. Imported demo rows are disposable; source CSV files remain.
+        - dropTable:
+            tableName: raw_data
+        - createTable:
+            tableName: raw_data
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: application_id, type: VARCHAR(64), constraints: { nullable: false } }
+              - column: { name: submitted_at, type: TIMESTAMP, constraints: { nullable: false } }
+              - column: { name: channel, type: VARCHAR(32), constraints: { nullable: false } }
+              - column: { name: product_code, type: VARCHAR(64), constraints: { nullable: false } }
+              - column: { name: requested_limit, type: "DECIMAL(12,2)", constraints: { nullable: false } }
+              - column: { name: status, type: VARCHAR(32), constraints: { nullable: false } }
+              - column: { name: steps_reached, type: INTEGER, constraints: { nullable: false } }
+              - column: { name: stopped_at_step, type: VARCHAR(32) }
+              - column: { name: decline_reason_code, type: VARCHAR(80) }
+              - column: { name: decided_at, type: TIMESTAMP }
+              - column: { name: granted_limit, type: "DECIMAL(12,2)" }
+              - column: { name: last_updated_at, type: TIMESTAMP, constraints: { nullable: false } }
+              - column: { name: age_band, type: VARCHAR(16), constraints: { nullable: false } }
+              - column: { name: residence_country, type: VARCHAR(8), constraints: { nullable: false } }
+              - column: { name: employment_status, type: VARCHAR(32), constraints: { nullable: false } }
+              - column: { name: annual_income, type: "DECIMAL(12,2)", constraints: { nullable: false } }
+              - column: { name: dti_ratio, type: "DECIMAL(6,4)", constraints: { nullable: false } }
+              - column: { name: credit_band, type: VARCHAR(8), constraints: { nullable: false } }
+              - column: { name: apr, type: "DECIMAL(5,2)", constraints: { nullable: false } }
+              - column: { name: screening_outcome, type: VARCHAR(32) }
+              - column: { name: kyc_outcome, type: VARCHAR(32) }
+              - column: { name: agreement_outcome, type: VARCHAR(32) }
+              - column: { name: source_filename, type: VARCHAR(150), constraints: { nullable: false } }
+              - column: { name: source_file_date, type: DATE, constraints: { nullable: false } }
+              - column: { name: imported_at, type: TIMESTAMP, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+        - createIndex:
+            tableName: raw_data
+            indexName: idx_raw_data_submitted
+            columns: [ { column: { name: submitted_at } } ]
+        - createIndex:
+            tableName: raw_data
+            indexName: idx_raw_data_product_channel
+            columns: [ { column: { name: product_code } }, { column: { name: channel } } ]
+        - createIndex:
+            tableName: raw_data
+            indexName: idx_raw_data_status
+            columns: [ { column: { name: status } } ]
+        - createIndex:
+            tableName: raw_data
+            indexName: idx_raw_data_application
+            columns: [ { column: { name: application_id } } ]
+        - delete:
+            tableName: processed
+        - renameTable:
+            oldTableName: processed
+            newTableName: processed_files
+        - addColumn:
+            tableName: processed_files
+            columns:
+              - column: { name: checksum, type: VARCHAR(64) }
+              - column: { name: rows_read, type: INTEGER, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: rows_inserted, type: INTEGER, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: error_message, type: VARCHAR(1000) }
+              - column: { name: processed_at, type: TIMESTAMP, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+      rollback:
+        - dropTable: { tableName: raw_data }
+        - renameTable: { oldTableName: processed_files, newTableName: processed }

@@ -25,3 +25,6 @@ service:
   domain: analytics
   orchestrator-url: http://localhost:9
   mocked-dependencies: id-verification-provider, sanctions-list
+
+portfolio:
+  data-directory: src/test/resources/customer_data

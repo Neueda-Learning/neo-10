@@ -1,8 +1,10 @@
 package com.neobank.module.model;
 
-/** The three outcome states shown by the portfolio dashboard. */
+/** Business outcomes plus the source feed's technical failure state. */
 public enum RawDataStatus {
     COMPLETED,
     REJECTED,
-    IN_PROGRESS
+    REFERRED,
+    IN_PROGRESS,
+    FAILED
 }
