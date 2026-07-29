@@ -1,141 +1,151 @@
-const STATUS_VALUES = new Set(['COMPLETED', 'REJECTED', 'IN_PROGRESS']);
-const CARD_TYPE_VALUES = new Set(['PREMIUM_CARD', 'PLATINUM_CARD']);
+const STATUSES = ['COMPLETED', 'REJECTED', 'REFERRED', 'IN_PROGRESS', 'FAILED'];
+const PRODUCTS = ['CREDIT_CARD_STANDARD', 'CREDIT_CARD_REWARDS', 'CREDIT_CARD_STUDENT'];
+const CHANNELS = ['WEB', 'MOBILE_APP', 'BRANCH', 'AGGREGATOR'];
+const STEPS = ['verification', 'policy', 'kyc', 'screening', 'credit', 'agreement', 'account', 'card'];
 
-let rows = [
-  ['COMPLETED', 'PREMIUM_CARD', '2026-01-08'], ['REJECTED', 'PLATINUM_CARD', '2026-01-14'],
-  ['IN_PROGRESS', 'PLATINUM_CARD', '2026-02-03'], ['COMPLETED', 'PREMIUM_CARD', '2026-02-20'],
-  ['REJECTED', 'PREMIUM_CARD', '2026-03-11'], ['IN_PROGRESS', 'PLATINUM_CARD', '2026-03-26'],
-  ['COMPLETED', 'PREMIUM_CARD', '2026-04-05'], ['REJECTED', 'PLATINUM_CARD', '2026-04-19'],
-  ['IN_PROGRESS', 'PREMIUM_CARD', '2026-05-08'], ['COMPLETED', 'PLATINUM_CARD', '2026-05-24'],
-  ['COMPLETED', 'PREMIUM_CARD', '2026-06-02'], ['IN_PROGRESS', 'PLATINUM_CARD', '2026-06-17'],
-  ['REJECTED', 'PREMIUM_CARD', '2026-07-06'], ['COMPLETED', 'PLATINUM_CARD', '2026-07-21'],
-  ['IN_PROGRESS', 'PREMIUM_CARD', '2026-08-09'], ['REJECTED', 'PLATINUM_CARD', '2026-08-27'],
-  ['COMPLETED', 'PLATINUM_CARD', '2026-09-13'], ['IN_PROGRESS', 'PREMIUM_CARD', '2026-09-30'],
-  ['REJECTED', 'PREMIUM_CARD', '2026-10-07'], ['COMPLETED', 'PLATINUM_CARD', '2026-10-22'],
-  ['IN_PROGRESS', 'PREMIUM_CARD', '2026-11-10'], ['REJECTED', 'PLATINUM_CARD', '2026-11-28'],
-  ['COMPLETED', 'PLATINUM_CARD', '2026-12-06'], ['IN_PROGRESS', 'PREMIUM_CARD', '2026-12-18'],
-].map(([status, cardType, appliedDate], index) => ({ id: index + 1, status, cardType, appliedDate }));
-
-let nextId = rows.length + 1;
-const processedUploads = new Set();
-let processedFiles = [
-  { id: 1, filename: 'customer_data_2026_01.csv', status: 'PROCESSED', rowCount: 2, processedAt: '2026-01-31T10:15:00Z' },
-  { id: 2, filename: 'customer_data_2026_02.csv', status: 'PROCESSED', rowCount: 2, processedAt: '2026-02-28T10:15:00Z' },
-  { id: 3, filename: 'customer_data_2026_03.csv', status: 'PROCESSED', rowCount: 2, processedAt: '2026-03-31T10:15:00Z' },
+const seed = [
+  ['APP-MOCK-001', '2026-01-01T09:00:00Z', 'WEB', 'CREDIT_CARD_STANDARD', 'COMPLETED', 8, 'card', null, 2500, 2500, '25-34', 'PERMANENT', 42000, 0.25, 'B'],
+  ['APP-MOCK-002', '2026-01-02T11:00:00Z', 'BRANCH', 'CREDIT_CARD_REWARDS', 'REJECTED', 4, 'credit', 'CRE_AFFORDABILITY_EXCEEDED', 6000, null, '35-44', 'CONTRACT', 31000, 0.48, 'D'],
+  ['APP-MOCK-001', '2026-02-03T13:00:00Z', 'MOBILE_APP', 'CREDIT_CARD_STUDENT', 'REFERRED', 3, 'screening', 'SCR_PARTIAL_MATCH', 1500, null, '18-24', 'STUDENT', 12000, 0.20, 'C'],
+  ['APP-MOCK-004', '2026-03-04T08:30:00Z', 'AGGREGATOR', 'CREDIT_CARD_REWARDS', 'IN_PROGRESS', 5, 'agreement', null, 8500, null, '45-54', 'SELF_EMPLOYED', 55000, 0.38, 'C'],
+  ['APP-MOCK-005', '2026-04-05T10:15:00Z', 'WEB', 'CREDIT_CARD_STANDARD', 'COMPLETED', 8, 'card', null, 4000, 3500, '55-64', 'RETIRED', 28000, 0.19, 'A'],
+  ['APP-MOCK-006', '2026-05-06T16:45:00Z', 'BRANCH', 'CREDIT_CARD_STUDENT', 'REJECTED', 2, 'kyc', 'KYC_LOW_CONFIDENCE', 2000, null, '18-24', 'UNEMPLOYED', 9000, 0.56, 'E'],
 ];
-let nextProcessedId = processedFiles.length + 1;
 
-function wait(value) {
-  return new Promise((resolve) => window.setTimeout(() => resolve(value), 180));
+function makeRow(values, index) {
+  const [applicationId, submittedAt, channel, productCode, status, stepsReached, stoppedAtStep,
+    declineReasonCode, requestedLimit, grantedLimit, ageBand, employmentStatus, annualIncome,
+    dtiRatio, creditBand] = values;
+  return {
+    id: index + 1, applicationId, submittedAt, channel, productCode, status, stepsReached,
+    stoppedAtStep, declineReasonCode, requestedLimit, grantedLimit,
+    decidedAt: ['COMPLETED', 'REJECTED', 'REFERRED'].includes(status)
+      ? new Date(new Date(submittedAt).valueOf() + 60 * 60 * 1000).toISOString() : null,
+    lastUpdatedAt: submittedAt, ageBand, residenceCountry: 'GB', employmentStatus, annualIncome,
+    dtiRatio, creditBand, apr: productCode === 'CREDIT_CARD_STANDARD' ? 19.9 : 24.9,
+    screeningOutcome: stepsReached >= 3 ? 'CLEAR' : null,
+    kycOutcome: stepsReached >= 2 ? 'VERIFIED' : null,
+    agreementOutcome: status === 'COMPLETED' ? 'SIGNED' : null,
+    sourceFilename: `neo_daily_${submittedAt.slice(0, 10)}.csv`,
+    sourceFileDate: submittedAt.slice(0, 10), importedAt: '2026-07-29T00:00:00Z',
+  };
 }
 
-function normaliseCardType(value) {
-  return String(value ?? '').trim().toUpperCase().replace(/[\s-]+/g, '_');
+let rows = seed.map(makeRow);
+let files = [{
+  id: 1, filename: 'neo_daily_2026-01-01.csv', status: 'PROCESSED',
+  checksum: 'b80c2f51769d2d8da00b95f3f49d1a57b061337e05f07273a0268f653e4579b9',
+  rowsRead: 1, rowsInserted: 1, errorMessage: null, processedAt: '2026-07-29T00:00:00Z',
+}];
+
+const wait = (value) => new Promise((resolve) => window.setTimeout(() => resolve(value), 120));
+const percent = (part, total) => total ? Number((part * 100 / total).toFixed(1)) : 0;
+const sum = (items, key) => items.reduce((total, item) => total + Number(item[key] ?? 0), 0);
+
+function filtered(filters = {}) {
+  return rows.filter((row) => {
+    const date = row.submittedAt.slice(0, 10);
+    return (!filters.from || date >= filters.from) && (!filters.to || date <= filters.to)
+      && (!filters.productCode || filters.productCode === 'ALL' || row.productCode === filters.productCode)
+      && (!filters.channel || filters.channel === 'ALL' || row.channel === filters.channel);
+  }).sort((a, b) => b.submittedAt.localeCompare(a.submittedAt) || b.id - a.id);
 }
 
-function normaliseStatus(value) {
-  return String(value ?? '').trim().toUpperCase();
+function statusCounts(items) {
+  return Object.fromEntries(STATUSES.map((status) => [status, items.filter((row) => row.status === status).length]));
 }
 
-function validDate(value) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(value + 'T12:00:00').valueOf());
-}
-
-function parseCsv(text, filename) {
-  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter((line) => line.trim() !== '');
-  if (lines.length < 2) throw new Error(filename + ': add a header and at least one data row.');
-  const headers = lines[0].split(',').map((header) => header.trim().toLowerCase());
-  const required = ['status', 'card_type', 'applied_date'];
-  const absent = required.filter((header) => !headers.includes(header));
-  if (absent.length) throw new Error(filename + ': missing column ' + absent.join(', ') + '.');
-  const index = Object.fromEntries(headers.map((header, position) => [header, position]));
-
-  return lines.slice(1).map((line, position) => {
-    const values = line.split(',').map((value) => value.trim());
-    const status = normaliseStatus(values[index.status]);
-    const cardType = normaliseCardType(values[index.card_type]);
-    const appliedDate = values[index.applied_date];
-    const rowNumber = position + 2;
-    if (!STATUS_VALUES.has(status)) throw new Error(filename + ': row ' + rowNumber + ' has an invalid status.');
-    if (!CARD_TYPE_VALUES.has(cardType)) throw new Error(filename + ': row ' + rowNumber + ' has an invalid card type.');
-    if (!validDate(appliedDate)) throw new Error(filename + ': row ' + rowNumber + ' needs applied_date in YYYY-MM-DD format.');
-    return { status, cardType, appliedDate };
+function outcomeGroups(items, labels, getter) {
+  return labels.map((label) => {
+    const group = items.filter((row) => getter(row) === label);
+    const count = statusCounts(group);
+    return {
+      label, completed: count.COMPLETED, rejected: count.REJECTED, referred: count.REFERRED,
+      inProgress: count.IN_PROGRESS, failed: count.FAILED, total: group.length,
+      completionRate: percent(count.COMPLETED, group.length),
+    };
   });
 }
 
-function filterRows({ from, to, cardType }) {
-  return rows.filter((row) => row.appliedDate >= from && row.appliedDate <= to && (cardType === 'ALL' || row.cardType === cardType));
+function labels(items, getter) {
+  const counts = new Map();
+  items.map(getter).filter(Boolean).forEach((value) => counts.set(value, (counts.get(value) ?? 0) + 1));
+  return [...counts].sort((a, b) => b[1] - a[1]).map(([label, count]) => ({ label, count }));
 }
 
-function countBy(items, key, values) {
-  return values.map((value) => ({ [key]: value, count: items.filter((item) => item[key] === value).length }));
-}
-
-function toQuarter(date) {
-  return Math.floor((Number(date.slice(5, 7)) - 1) / 3) + 1;
+function analytics(items) {
+  const counts = statusCounts(items);
+  const topReasons = labels(items, (row) => row.declineReasonCode)
+    .map(({ label, count }) => ({ reason: label, count, share: percent(count, items.length), topStoppedStep: null }));
+  const months = [...new Set(items.map((row) => row.submittedAt.slice(0, 7)))].sort();
+  const monthlyTrend = months.map((period) => {
+    const group = items.filter((row) => row.submittedAt.startsWith(period));
+    const c = statusCounts(group);
+    return { period, completed: c.COMPLETED, rejected: c.REJECTED, referred: c.REFERRED, inProgress: c.IN_PROGRESS, failed: c.FAILED, total: group.length };
+  });
+  const journeySteps = STEPS.map((name, index) => {
+    const group = items.filter((row) => row.stepsReached >= index);
+    const stopped = items.filter((row) => row.stoppedAtStep === name);
+    const c = statusCounts(group);
+    return {
+      step: index + 1, name, reached: group.length, stopped: stopped.length, completed: c.COMPLETED,
+      rejected: c.REJECTED, referred: c.REFERRED, inProgress: c.IN_PROGRESS, failed: c.FAILED,
+      topReason: stopped.find((row) => row.declineReasonCode)?.declineReasonCode ?? null,
+    };
+  });
+  const productOutcomes = outcomeGroups(items, PRODUCTS, (row) => row.productCode);
+  return {
+    total: items.length, completionRate: percent(counts.COMPLETED, items.length),
+    totalRequestedLimit: sum(items, 'requestedLimit'), totalGrantedLimit: sum(items, 'grantedLimit'),
+    medianDecisionMinutes: 60,
+    statusBreakdown: STATUSES.map((status) => ({ status, count: counts[status] })),
+    monthlyTrend, topReasons, journeySteps, stoppedByStep: labels(items, (row) => row.stoppedAtStep),
+    productOutcomes, channelOutcomes: outcomeGroups(items, CHANNELS, (row) => row.channel),
+    productLimits: PRODUCTS.map((label) => {
+      const group = items.filter((row) => row.productCode === label);
+      return {
+        label, averageRequested: group.length ? sum(group, 'requestedLimit') / group.length : 0,
+        averageGranted: group.filter((row) => row.grantedLimit != null).length
+          ? sum(group, 'grantedLimit') / group.filter((row) => row.grantedLimit != null).length : 0,
+        averageApr: group.length ? sum(group, 'apr') / group.length : 0,
+      };
+    }),
+    creditBandOutcomes: outcomeGroups(items, ['A', 'B', 'C', 'D', 'E'], (row) => row.creditBand),
+    dtiBandOutcomes: outcomeGroups(items, ['≤ 0.25', '0.26–0.35', '0.36–0.45', '0.46–0.55', '> 0.55'], (row) => {
+      if (row.dtiRatio <= 0.25) return '≤ 0.25';
+      if (row.dtiRatio <= 0.35) return '0.26–0.35';
+      if (row.dtiRatio <= 0.45) return '0.36–0.45';
+      if (row.dtiRatio <= 0.55) return '0.46–0.55';
+      return '> 0.55';
+    }),
+    incomeCompletionRates: ['< £15k', '£15–25k', '£25–40k', '£40–60k', '£60k+'].map((label) => ({ label, count: 1, rate: label === '< £15k' ? 0 : 50 })),
+    screeningOutcomes: labels(items, (row) => row.screeningOutcome),
+    kycOutcomes: labels(items, (row) => row.kycOutcome),
+    agreementOutcomes: labels(items, (row) => row.agreementOutcome),
+    ageOutcomes: outcomeGroups(items, ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'], (row) => row.ageBand),
+    employmentOutcomes: outcomeGroups(items, ['PERMANENT', 'SELF_EMPLOYED', 'CONTRACT', 'RETIRED', 'STUDENT', 'UNEMPLOYED'], (row) => row.employmentStatus),
+  };
 }
 
 export const mockRawDataApi = {
-  async uploadFiles(files) {
-    const results = [];
-    let rowsInserted = 0;
-    for (const file of files) {
-      const key = [file.name, file.size, file.lastModified].join(':');
-      if (processedUploads.has(key)) {
-        results.push({ filename: file.name, result: 'ALREADY_IMPORTED', rowsInserted: 0 });
-        continue;
-      }
-      try {
-        const importedRows = parseCsv(await file.text(), file.name);
-        rows = rows.concat(importedRows.map((row) => ({ ...row, id: nextId++ })));
-        processedUploads.add(key);
-        processedFiles = [{ id: nextProcessedId++, filename: file.name, status: 'PROCESSED', rowCount: importedRows.length, processedAt: new Date().toISOString() }, ...processedFiles];
-        rowsInserted += importedRows.length;
-        results.push({ filename: file.name, result: 'PROCESSED', rowsInserted: importedRows.length });
-      } catch (error) {
-        processedFiles = [{ id: nextProcessedId++, filename: file.name, status: 'FAILED', rowCount: 0, processedAt: null, errorMessage: error.message }, ...processedFiles];
-        results.push({ filename: file.name, result: 'FAILED', rowsInserted: 0, error: error.message });
-      }
-    }
-    const hasProcessed = results.some((item) => item.result === 'PROCESSED');
-    const hasFailed = results.some((item) => item.result === 'FAILED');
+  async scanFiles() {
     return wait({
-      status: hasFailed && hasProcessed ? 'PARTIAL_SUCCESS' : hasFailed ? 'FAILED' : hasProcessed ? 'SUCCESS' : 'NO_NEW_FILES',
-      rowsInserted,
-      results,
+      status: 'NO_NEW_FILES', filesFound: files.length, filesProcessed: 0, filesSkipped: files.length,
+      filesFailed: 0, rowsInserted: 0,
+      results: files.map((file) => ({ filename: file.filename, result: 'SKIPPED', rowsRead: 0, rowsInserted: 0, error: null })),
     });
   },
-
-  async getRawData({ from, to, cardType, page = 0, size = 50 }) {
-    const filtered = filterRows({ from, to, cardType }).sort((a, b) => b.appliedDate.localeCompare(a.appliedDate) || b.id - a.id);
-    return wait({ total: filtered.length, items: filtered.slice(page * size, page * size + size) });
+  async resetData() {
+    const response = { status: 'RESET_COMPLETE', rawRowsDeleted: rows.length, processedFilesDeleted: files.length, demoRowsDeleted: 0 };
+    rows = []; files = [];
+    return wait(response);
   },
-
-  async getAnalytics(filters) {
-    const filtered = filterRows(filters);
-    const quarterlyBreakdown = [1, 2, 3, 4].map((quarter) => {
-      const quarterRows = filtered.filter((row) => toQuarter(row.appliedDate) === quarter);
-      const completed = quarterRows.filter((row) => row.status === 'COMPLETED').length;
-      const rejected = quarterRows.filter((row) => row.status === 'REJECTED').length;
-      const inProgress = quarterRows.filter((row) => row.status === 'IN_PROGRESS').length;
-      return { quarter: 'Q' + quarter, completed, rejected, inProgress, total: completed + rejected + inProgress };
-    });
-    return wait({
-      total: filtered.length,
-      statusBreakdown: countBy(filtered, 'status', ['COMPLETED', 'REJECTED', 'IN_PROGRESS']),
-      cardTypeBreakdown: countBy(filtered, 'cardType', ['PREMIUM_CARD', 'PLATINUM_CARD']),
-      cardTypeStatusBreakdown: ['PREMIUM_CARD', 'PLATINUM_CARD'].map((cardType) => {
-        const cardRows = filtered.filter((row) => row.cardType === cardType);
-        const completed = cardRows.filter((row) => row.status === 'COMPLETED').length;
-        const rejected = cardRows.filter((row) => row.status === 'REJECTED').length;
-        const inProgress = cardRows.filter((row) => row.status === 'IN_PROGRESS').length;
-        return { cardType, completed, rejected, inProgress, total: completed + rejected + inProgress };
-      }),
-      quarterlyBreakdown,
-    });
+  async getRawData(filters = {}) {
+    const result = filtered(filters);
+    const page = Math.max(filters.page ?? 0, 0);
+    const size = Math.max(filters.size ?? 50, 1);
+    return wait({ total: result.length, items: result.slice(page * size, page * size + size) });
   },
-
-  async getProcessedFiles() {
-    return wait({ items: processedFiles, total: processedFiles.length });
-  },
+  async getAnalytics(filters) { return wait(analytics(filtered(filters))); },
+  async getProcessedFiles() { return wait({ items: files, total: files.length }); },
 };
