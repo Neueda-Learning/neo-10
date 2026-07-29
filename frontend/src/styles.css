@@ -203,6 +203,12 @@
   min-width: 0;
 }
 
+.csv-quarterly__total {
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
 .csv-quarterly__value {
   color: var(--ds-color-text-secondary);
   font-size: var(--ds-text-sm);
@@ -211,19 +217,31 @@
 
 .csv-quarterly__plot {
   display: flex;
-  flex-direction: column-reverse;
-  justify-content: flex-start;
-  width: min(100%, 5rem);
+  align-items: end;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  width: min(100%, 7rem);
   height: 100%;
-  overflow: hidden;
-  border-radius: var(--ds-radius-control) var(--ds-radius-control) 0 0;
-  background: var(--ds-series-track);
+  padding: 0 var(--ds-space-2);
+  border-bottom: var(--ds-border-width) solid var(--ds-color-border);
+}
+
+.csv-quarterly__bar {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: end;
+  min-width: 0;
+  height: 100%;
+  gap: var(--ds-space-1);
 }
 
 .csv-quarterly__segment {
   display: block;
   width: 100%;
   min-height: 0;
+  border-radius: var(--ds-radius-control) var(--ds-radius-control) 0 0;
   transition: height var(--ds-transition);
 }
 
