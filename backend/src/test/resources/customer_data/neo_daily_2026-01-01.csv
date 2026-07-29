@@ -1,0 +1,4 @@
+application_id,submitted_at,channel,product_code,requested_limit,status,steps_reached,stopped_at_step,decline_reason_code,decided_at,granted_limit,last_updated_at,age_band,residence_country,employment_status,annual_income,dti_ratio,credit_band,apr,screening_outcome,kyc_outcome,agreement_outcome
+APP-001,2026-01-01T09:00:00Z,WEB,CREDIT_CARD_STANDARD,2500,COMPLETED,8,card,,2026-01-01T10:00:00Z,2500,2026-01-01T10:00:00Z,25-34,GB,PERMANENT,42000,0.25,B,19.9,CLEAR,VERIFIED,SIGNED
+APP-002,2026-01-01T11:00:00Z,BRANCH,CREDIT_CARD_REWARDS,6000,REJECTED,4,credit,CRE_AFFORDABILITY_EXCEEDED,2026-01-01T12:00:00Z,,2026-01-01T12:00:00Z,35-44,GB,CONTRACT,31000,0.48,D,24.9,CLEAR,VERIFIED,
+APP-001,2026-01-01T13:00:00Z,MOBILE_APP,CREDIT_CARD_STUDENT,1500,REFERRED,3,screening,SCR_PARTIAL_MATCH,2026-01-01T14:00:00Z,,2026-01-01T14:00:00Z,18-24,IE,STUDENT,12000,0.20,C,24.9,REVIEW,VERIFIED,
