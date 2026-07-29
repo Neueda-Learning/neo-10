@@ -52,6 +52,11 @@ services:
       ORCHESTRATOR_URL: ${ORCHESTRATOR_URL:-http://sidecar:8080}
       # Any localhost port by default — see WebConfig for why a fixed list breaks the UI.
       CORS_ALLOWED_ORIGIN_PATTERNS: ${CORS_ALLOWED_ORIGIN_PATTERNS:-http://localhost:*,http://127.0.0.1:*}
+      # Always relative to the backend WORKDIR (/app in the container). AWS Dev
+      # uses the same value and may mount persistent storage at the resolved path.
+      PORTFOLIO_DATA_DIRECTORY: src/main/resources/customer_data
+    volumes:
+      - ./backend/src/main/resources/customer_data:/app/src/main/resources/customer_data:ro
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     depends_on:
