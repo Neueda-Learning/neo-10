@@ -2,17 +2,16 @@ package com.neobank.module.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.neobank.module.dto.ProcessFileResponse;
+import com.neobank.module.model.Decision;
+import com.neobank.module.model.DemoShowcase;
 import com.neobank.module.model.RawDataStatus;
+import com.neobank.module.repository.DemoShowcaseRepository;
 import com.neobank.module.repository.ProcessedFileRepository;
 import com.neobank.module.repository.RawDataRepository;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,50 +19,39 @@ import org.springframework.transaction.annotation.Transactional;
 @ActiveProfiles("test")
 @Transactional
 class PortfolioDataServiceTest {
+    @Autowired private PortfolioDataService portfolioData;
+    @Autowired private RawDataRepository rawData;
+    @Autowired private ProcessedFileRepository processedFiles;
+    @Autowired private DemoShowcaseRepository demoShowcase;
 
-    @Autowired
-    private PortfolioDataService portfolioData;
-
-    @Autowired
-    private RawDataRepository rawData;
-
-    @Autowired
-    private ProcessedFileRepository processedFiles;
-
-    @BeforeEach
-    void clearPortfolioTables() {
+    @BeforeEach void clearPortfolioTables() {
         rawData.deleteAll();
         processedFiles.deleteAll();
+        demoShowcase.deleteAll();
     }
 
-    @Test
-    void importsLegacyValuesOnceAndSkipsTheSameFilenameLater() {
-        ProcessFileResponse firstImport = portfolioData.processFiles(List.of(csv("customer_data_2026_01.csv")));
-
-        assertThat(firstImport.status()).isEqualTo("SUCCESS");
-        assertThat(firstImport.rowsInserted()).isEqualTo(3);
-        assertThat(rawData.count()).isEqualTo(3);
-        assertThat(processedFiles.count()).isEqualTo(1);
+    @Test void scansOnceAndAllowsDuplicateApplicationIds() {
+        var first = portfolioData.scanFolder();
+        assertThat(first.status()).isEqualTo("SUCCESS");
+        assertThat(first.rowsInserted()).isEqualTo(3);
+        assertThat(rawData.findAll().stream().filter(row -> row.getApplicationId().equals("APP-001"))).hasSize(2);
         assertThat(rawData.findAll().stream().map(row -> row.getStatus()))
-                .containsExactlyInAnyOrder(
-                        RawDataStatus.COMPLETED,
-                        RawDataStatus.REJECTED,
-                        RawDataStatus.IN_PROGRESS);
-
-        ProcessFileResponse secondImport = portfolioData.processFiles(List.of(csv("customer_data_2026_01.csv")));
-
-        assertThat(secondImport.status()).isEqualTo("NO_NEW_FILES");
-        assertThat(secondImport.rowsInserted()).isZero();
-        assertThat(secondImport.results()).singleElement().extracting(item -> item.result()).isEqualTo("ALREADY_IMPORTED");
+                .containsExactlyInAnyOrder(RawDataStatus.COMPLETED, RawDataStatus.REJECTED, RawDataStatus.REFERRED);
+        var second = portfolioData.scanFolder();
+        assertThat(second.status()).isEqualTo("NO_NEW_FILES");
+        assertThat(second.filesSkipped()).isEqualTo(1);
         assertThat(rawData.count()).isEqualTo(3);
-        assertThat(processedFiles.count()).isEqualTo(1);
     }
 
-    private MockMultipartFile csv(String filename) {
-        String body = "id,status,card_type,timestamp\n"
-                + "APP-001,COMPLETED,premium,2026-01-12 09:30:00\n"
-                + "APP-002,DECLINED,platinum,2026-01-14 10:00:00\n"
-                + "APP-003,ACCEPTED,premium,2026-01-31 16:15:00\n";
-        return new MockMultipartFile("files", filename, "text/csv", body.getBytes(StandardCharsets.UTF_8));
+    @Test void resetClearsAllBusinessTables() {
+        portfolioData.scanFolder();
+        demoShowcase.save(new DemoShowcase("APP-DEMO-RESET", Decision.ACCEPTED));
+        var result = portfolioData.resetData();
+        assertThat(result.rawRowsDeleted()).isEqualTo(3);
+        assertThat(result.processedFilesDeleted()).isEqualTo(1);
+        assertThat(result.demoRowsDeleted()).isEqualTo(1);
+        assertThat(rawData.count()).isZero();
+        assertThat(processedFiles.count()).isZero();
+        assertThat(demoShowcase.count()).isZero();
     }
 }
