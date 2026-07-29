@@ -1,39 +1,33 @@
-# Card portfolio dashboard front-end design
+# Portfolio dashboard front-end design
 
-The application uses a left sidebar to separate analysis from data operations:
+The full screen, chart and calculation specification is in
+[`../PORTFOLIO_ANALYTICS_IMPLEMENTATION.md`](../PORTFOLIO_ANALYTICS_IMPLEMENTATION.md).
+
+Current navigation:
 
 ```text
-Analytics: Overview · Quarterly trend · Card analysis
-Data: Raw data · Processed files
+Analytics: Overview · Journey funnel · Product & channel · Credit & risk
+Data:      Raw data · Scan history
+Actions:   Scan folder · Reset data
 ```
 
-The sidebar upload action opens Processed files, where the local multi-file CSV
-selector and the processing history are displayed together.
+Global filters on analytics and Raw data:
 
-## Screens and charts
+```text
+From · To · Product · Channel
+```
 
-- **Overview**: four outcome metrics and the three-status donut chart.
-- **Quarterly trend**: Q1–Q4 stacked columns for Completed, Rejected and In progress.
-- **Card analysis**: card-type donut plus a 100% stacked outcome mix for Premium and Platinum Card.
-- **Raw data**: the filtered `raw_data` records table.
-- **Processed files**: CSV import action and `processed_files` history table.
+Screen summary:
 
-## Global reporting filters
+- **Overview**: six presentation KPIs, monthly grouped four-outcome bars, status donut and
+  reason ranking.
+- **Journey funnel**: eight step rows with separate Completed, Rejected, Referred and
+  In-progress bars; stopped-step ranking; reason ranking; exception table.
+- **Product & channel**: outcome mix by product/channel, requested-versus-granted limits and
+  product summary.
+- **Credit & risk**: credit/DTI/income cohorts, controls, age and employment outcome monitoring.
+- **Raw data**: filtered source rows with expandable full details and provenance.
+- **Scan history**: checksum, file result, row counts, error details and action summaries.
 
-The following workflow applies on Overview, Quarterly trend, Card analysis and
-Raw data:
-
-1. Choose start date, end date and card type.
-2. Read filtered data and analytics.
-3. Use the appropriate sidebar screen to view the chart or raw records.
-
-There is deliberately no status filter. All analytics screens use exactly the
-same `from`, `to` and `cardType` query values, so the three-status chart remains
-a meaningful comparison.
-
-## Demo and API modes
-
-`src/dashboard/rawDataMock.js` is an in-memory demo gateway. It supports local
-CSV selection and enables visual testing without a backend. No browser demo data
-is persistent. Set `VITE_DATA_MODE=api` to switch the same UI to the backend API
-contract documented in `API_CONTRACT.md`.
+The implementation keeps the existing design-system and places all product-specific layout
+and chart styling in `src/styles.css`.
