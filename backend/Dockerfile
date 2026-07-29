@@ -17,6 +17,9 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/src/main/resources/customer_data /app/src/main/resources/customer_data
+# Relative to WORKDIR /app. The same configuration value is used locally and in AWS.
+ENV PORTFOLIO_DATA_DIRECTORY=src/main/resources/customer_data
 EXPOSE 8080
 # Verified on Saturday, 2026-07-25 — pipeline flow check (README is paths-ignored on its own).
 ENTRYPOINT ["java", "-jar", "app.jar"]

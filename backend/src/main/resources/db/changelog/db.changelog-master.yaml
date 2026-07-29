@@ -10,3 +10,5 @@ databaseChangeLog:
       file: db/changelog/changes/003-create-processed.yaml
   - include:
       file: db/changelog/changes/004-add-processed-filename-unique.yaml
+  - include:
+      file: db/changelog/changes/005-rebuild-portfolio-analytics-tables.yaml

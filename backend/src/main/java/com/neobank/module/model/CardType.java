@@ -1,7 +1,8 @@
 package com.neobank.module.model;
 
-/** The two card products supported by the imported CSV contract. */
+/** Product codes supported by the daily application feed. */
 public enum CardType {
-    PREMIUM_CARD,
-    PLATINUM_CARD
+    CREDIT_CARD_STANDARD,
+    CREDIT_CARD_REWARDS,
+    CREDIT_CARD_STUDENT
 }
