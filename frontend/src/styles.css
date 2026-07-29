@@ -12,7 +12,7 @@
 }
 
 .csv-side-group {
-  margin-top: var(--ds-space-3);
+  margin-top: var(--ds-space-1);
   padding: 0 var(--ds-space-2);
   color: var(--ds-color-text-muted);
   font-size: var(--ds-text-xs);
@@ -23,9 +23,26 @@
 
 .csv-side-actions {
   display: grid;
-  gap: var(--ds-space-3);
-  margin-top: var(--ds-space-3);
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-1);
   padding: 0 var(--ds-space-2);
+}
+
+/* Keep all six destinations and both presentation actions visible on a
+ * conventional 768px-high laptop without changing the shared design system. */
+.ds-shell__side {
+  gap: var(--ds-space-2);
+  max-height: calc(100vh - (2 * var(--ds-page-pad-y)));
+  overflow-y: auto;
+}
+
+.ds-shell__side .ds-side {
+  gap: 0;
+  padding: var(--ds-space-2);
+}
+
+.ds-shell__side .ds-side__item {
+  padding: var(--ds-space-2) var(--ds-space-3);
 }
 
 .csv-side-context p {
@@ -103,14 +120,55 @@
 }
 
 .csv-metrics {
+  align-items: stretch;
   margin-bottom: var(--ds-space-7);
+}
+
+.csv-metrics > .ds-metric {
+  display: flex;
+  flex-direction: column;
+  min-height: 8.75rem;
+  height: 100%;
 }
 
 .csv-chart-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
   gap: var(--ds-space-6);
   margin-bottom: var(--ds-space-7);
+}
+
+.csv-chart-grid > .ds-section {
+  display: flex;
+  min-width: 0;
+  margin-bottom: 0;
+  flex-direction: column;
+}
+
+.csv-chart-grid > .ds-section > .ds-section__head {
+  min-height: 2.75rem;
+  align-items: flex-start;
+}
+
+.csv-chart-grid > .ds-section > .ds-card {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  flex-direction: column;
+}
+
+.csv-chart-grid > .ds-section > .ds-card > .ds-card__body {
+  flex: 1;
+}
+
+/* Dashboard tables use one alignment rule. Mixed left/right alignment made the
+ * wide raw-data table difficult to scan, so labels, values and numbers all start
+ * from the same left edge. */
+.ds-shell__main .ds-table th,
+.ds-shell__main .ds-table td,
+.ds-shell__main .ds-table__cell--num {
+  text-align: left;
 }
 
 .csv-overview-chart {
@@ -409,4 +467,96 @@
   .csv-quarterly__legend {
     right: 0;
   }
+}
+
+/* Portfolio analytics charts. They reuse the design-system tones; status colour
+ * never changes between overview, journey, product and risk screens. */
+.csv-outcome-bars,
+.csv-ranked-bars,
+.csv-limit-chart,
+.csv-journey {
+  display: grid;
+  gap: var(--ds-space-4);
+}
+
+.csv-outcome-row { display: grid; gap: var(--ds-space-2); }
+.csv-outcome-head { display: flex; justify-content: space-between; gap: var(--ds-space-4); color: var(--ds-color-text-secondary); font-size: var(--ds-text-sm); }
+.csv-outcome-head strong { color: var(--ds-color-text); }
+.csv-mix-track { display: flex; height: 1.15rem; overflow: hidden; border-radius: var(--ds-radius-pill); background: var(--ds-series-track); }
+.csv-mix-segment { display: block; min-width: 0; }
+.csv-mix-segment--completed, .csv-bar-fill--completed { background: var(--ds-tone-positive-accent); }
+.csv-mix-segment--rejected, .csv-bar-fill--rejected { background: var(--ds-tone-negative-accent); }
+.csv-mix-segment--referred, .csv-bar-fill--referred { background: var(--ds-tone-warning-accent); }
+.csv-mix-segment--inProgress, .csv-bar-fill--inProgress { background: var(--ds-tone-info-accent); }
+
+.csv-chart-legend { display: flex; flex-wrap: wrap; gap: var(--ds-space-4); padding-top: var(--ds-space-3); color: var(--ds-color-text-secondary); font-size: var(--ds-text-sm); }
+.csv-chart-legend span { display: inline-flex; align-items: center; gap: var(--ds-space-2); }
+.csv-dot--referred { background: var(--ds-tone-warning-accent); }
+
+.csv-journey-row { display: grid; grid-template-columns: minmax(8rem, .75fr) minmax(18rem, 3fr); gap: var(--ds-space-4); padding-bottom: var(--ds-space-4); border-bottom: var(--ds-border-width) solid var(--ds-color-border-subtle); }
+.csv-journey-label { display: flex; flex-direction: column; text-transform: capitalize; }
+.csv-journey-label span { color: var(--ds-color-text-muted); font-size: var(--ds-text-xs); }
+.csv-journey-bars { display: grid; gap: var(--ds-space-2); }
+.csv-journey-line, .csv-ranked-row, .csv-limit-line { display: grid; grid-template-columns: minmax(7rem, .7fr) minmax(8rem, 3fr) 4rem; align-items: center; gap: var(--ds-space-3); color: var(--ds-color-text-secondary); font-size: var(--ds-text-sm); }
+.csv-journey-line b, .csv-ranked-row b, .csv-limit-line b { color: var(--ds-color-text); text-align: right; font-variant-numeric: tabular-nums; }
+.csv-bar-track { height: .78rem; overflow: hidden; border-radius: var(--ds-radius-pill); background: var(--ds-series-track); }
+.csv-bar-fill { display: block; height: 100%; min-width: 2px; border-radius: inherit; }
+.csv-bar-fill--accent { background: var(--ds-color-accent); }
+.csv-bar-fill--requested { background: var(--ds-tone-info-accent); }
+.csv-bar-fill--granted { background: var(--ds-tone-positive-accent); }
+.csv-ranked-row { grid-template-columns: minmax(11rem, 1.25fr) minmax(8rem, 3fr) 4rem; }
+.csv-ranked-row > span { line-height: 1.35; overflow-wrap: anywhere; }
+.csv-limit-row { display: grid; gap: var(--ds-space-2); padding-bottom: var(--ds-space-3); }
+
+.csv-trend { display: grid; gap: var(--ds-space-4); min-height: 19rem; overflow-x: auto; }
+.csv-month-groups { display: flex; align-items: stretch; gap: var(--ds-space-5); height: 16rem; min-width: max(100%, 54rem); padding-top: var(--ds-space-3); }
+.csv-month-group { display: grid; grid-template-rows: 1fr auto; flex: 1; min-width: 6.5rem; gap: var(--ds-space-2); }
+.csv-month-bars { display: grid; grid-template-columns: repeat(4, minmax(.7rem, 1fr)); align-items: end; gap: var(--ds-space-1); border-bottom: var(--ds-border-width) solid var(--ds-color-border); }
+.csv-month-bar { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: var(--ds-space-1); height: 100%; min-width: 0; }
+.csv-month-bar span { color: var(--ds-color-text-secondary); font-size: var(--ds-text-2xs); font-variant-numeric: tabular-nums; }
+.csv-month-bar .csv-bar-fill { width: 100%; min-height: 0; border-radius: var(--ds-radius-control) var(--ds-radius-control) 0 0; }
+.csv-month-group > strong { font-size: var(--ds-text-xs); text-align: center; }
+
+.csv-control-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--ds-space-6); }
+.csv-compact { display: grid; align-content: start; gap: var(--ds-space-3); }
+.csv-compact > div { display: flex; justify-content: space-between; align-items: center; gap: var(--ds-space-3); }
+.csv-muted { color: var(--ds-color-text-muted); font-size: var(--ds-text-sm); }
+
+.csv-risk-guide {
+  margin-bottom: var(--ds-space-7);
+}
+
+.csv-risk-guide .ds-card__body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-5);
+}
+
+.csv-risk-guide .ds-card__body > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.csv-risk-guide strong {
+  color: var(--ds-color-text);
+  font-size: var(--ds-text-sm);
+}
+
+.csv-risk-guide span {
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-body);
+}
+
+.csv-raw-detail { display: grid; grid-template-columns: repeat(3, minmax(10rem, 1fr)); gap: var(--ds-space-4); padding: var(--ds-space-3); }
+.csv-raw-detail > div { display: flex; flex-direction: column; gap: var(--ds-space-1); }
+.csv-raw-detail span { color: var(--ds-color-text-muted); font-size: var(--ds-text-xs); text-transform: capitalize; }
+.csv-raw-detail strong { overflow-wrap: anywhere; font-family: var(--ds-font-mono); font-size: var(--ds-text-sm); }
+
+@media (max-width: 760px) {
+  .csv-journey-row { grid-template-columns: 1fr; }
+  .csv-control-grid, .csv-raw-detail, .csv-risk-guide .ds-card__body { grid-template-columns: 1fr; }
+  .csv-ranked-row, .csv-journey-line, .csv-limit-line { grid-template-columns: minmax(7rem, 1fr) minmax(6rem, 2fr) 3.5rem; }
+  .csv-outcome-head { align-items: flex-start; flex-direction: column; gap: var(--ds-space-1); }
 }

@@ -4,17 +4,17 @@ import { Badge } from '../design-system';
 const toneFor = {
   COMPLETED: 'positive',
   REJECTED: 'negative',
+  REFERRED: 'warning',
   IN_PROGRESS: 'info',
-  PREMIUM_CARD: 'info',
-  PLATINUM_CARD: 'warning',
+  FAILED: 'neutral',
 };
 
 const labelFor = {
   COMPLETED: 'Completed',
   REJECTED: 'Rejected',
+  REFERRED: 'Referred',
   IN_PROGRESS: 'In progress',
-  PREMIUM_CARD: 'Premium Card',
-  PLATINUM_CARD: 'Platinum Card',
+  FAILED: 'Failed',
 };
 
 export default function DonutChart({ items, valueKey, total, emptyLabel = 'No matching records' }) {
