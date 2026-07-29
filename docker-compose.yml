@@ -39,6 +39,9 @@ services:
       DB_URL: ${DB_URL:-jdbc:mysql://mysql:3306/neo_10}
       DB_USERNAME: ${DB_USERNAME:-appuser}
       DB_PASSWORD: ${DB_PASSWORD:-apppass}
+      # Normally false. Set true for one recovery startup only when Liquibase reports a
+      # checksum conflict for an already-applied local migration; it does not delete data.
+      SPRING_LIQUIBASE_CLEAR_CHECKSUMS: ${SPRING_LIQUIBASE_CLEAR_CHECKSUMS:-false}
       SERVICE_ID: ${SERVICE_ID:-neo10}
       SERVICE_NAME: ${SERVICE_NAME:-Portfolio & Regulatory Analytics}
       SERVICE_DOMAIN: ${SERVICE_DOMAIN:-analytics}
@@ -71,7 +74,7 @@ services:
   # Do not replace this with a local path or a vendored copy. One repo, one copy — that is what
   # stops ten teams ending up with ten different mock orchestrators.
   sidecar:
-    build: https://github.com/gjavolce/neobank-sidecar.git#${SIDECAR_REF:-v1}
+    build: https://github.com/Neueda-Learning/neobank-sidecar.git#${SIDECAR_REF:-v1}
     environment:
       DB_URL: jdbc:mysql://mysql:3306/sidecar_db
       DB_USERNAME: ${DB_USERNAME:-appuser}
@@ -94,11 +97,15 @@ services:
       start_period: 40s
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_DATA_MODE: api
     ports:
       - "${FRONTEND_PORT:-5173}:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   mysql-data:

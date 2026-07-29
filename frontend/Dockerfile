@@ -7,9 +7,11 @@
 # argument, not an environment variable, because Vite bakes asset URLs into index.html at
 # build time and an ALB cannot rewrite paths on the way through.
 ARG APP_BASE_PATH=""
+ARG VITE_DATA_MODE=api
 
 FROM node:20-alpine AS build
 ARG APP_BASE_PATH
+ARG VITE_DATA_MODE
 WORKDIR /app
 COPY package.json package-lock.json ./
 # `npm ci` can fail, print "Exit handler never called!" and still exit 0 — Docker then
@@ -21,6 +23,7 @@ COPY . .
 # puts in front of every fetch. One input, both halves.
 ENV APP_BASE_PATH=${APP_BASE_PATH}
 ENV VITE_API_BASE=${APP_BASE_PATH}
+ENV VITE_DATA_MODE=${VITE_DATA_MODE}
 RUN npm run build
 
 FROM nginx:1.27-alpine AS runtime
